@@ -142,20 +142,105 @@ test('should call method once with each argument', t => {
   t.true(spy.withArgs(1).calledOnce);
 });
 
+/******************************************* Stub function ********************************************/
 
-// test.only('test should call all subscribers, even if there are exceptions', t => {
-//   let message = 'an example message';
-//   let stub = sinon.stub().throws();
-//   let spy1 = sinon.spy();
-//   let spy2 = sinon.spy();
+test('test should stub method differently based on arguments', t => {
+  let stubFunction = sinon.stub();
+  stubFunction.withArgs(42).returns(1);
+  stubFunction.withArgs(1).throws("name");
 
-//   PubSub.subscribe(message, stub);
-//   PubSub.subscribe(message, spy1);
-//   PubSub.subscribe(message, spy2);
+  t.is(stubFunction(), undefined);
+  t.true(stubFunction.called);
+  t.is(stubFunction(42), 1);
+  t.throws(() => {
+    stubFunction(1)
+  })
+});
 
-//   PubSub.publishSync(message, '123');
+test('test should stub method differently on consecutive calls', t => {
+  let stubFunction = sinon.stub();
+  stubFunction.onCall(0).returns(1);
+  stubFunction.onCall(1).returns(2);
+  stubFunction.returns(3);
 
-//   t.true(spy1.called);
-//   t.true(spy2.called);
-//   t.true(stub.calledBefore(spy1));
-// });
+  t.is(stubFunction(), 1);
+  t.is(stubFunction(), 2);
+  t.is(stubFunction(), 3);
+  t.is(stubFunction(), 3);
+});
+
+test('test should stub method differently on consecutive calls with certain argument', t => {
+  let stubFunction = sinon.stub();
+  stubFunction.withArgs(42)
+    .onFirstCall().returns(1)
+    .onSecondCall().returns(2);
+  stubFunction.returns(0);
+
+  t.is(stubFunction(42), 1);
+  t.is(stubFunction(42), 2);
+  t.is(stubFunction(), 0);
+  t.is(stubFunction(1), 0);
+});
+
+test('Resets the stub’s behaviour to the default behavior', t => {
+  let stubFunction = sinon.stub();
+  stubFunction.returns(5);
+
+  t.is(stubFunction(), 5);
+  // stubFunction.reset();
+  //or
+  stubFunction.resetBehavior();
+  t.is(stubFunction(), undefined);
+});
+
+test('Resets the stub’s history', t => {
+  let stubFunction = sinon.stub();
+  t.false(stubFunction.called)
+  stubFunction();
+  t.true(stubFunction.called);
+  // stubFunction.reset();
+  //or
+  stubFunction.resetHistory();
+  t.false(stubFunction.called);
+});
+
+test('Makes the stub call the provided fakeFunction when invoked.', t => {
+  let stubFunction = sinon.stub(main, 'user');
+  stubFunction.withArgs('romi').onCall(0).returns('fake-user-advance-romi');
+  stubFunction.callsFake((userName) => {
+    return `fake-user-${userName}`;
+  })
+  t.is(main.user('subham'), 'fake-user-subham');
+  t.is(main.user('romi'), 'fake-user-advance-romi');
+  t.is(main.user('romi'), 'fake-user-romi');
+  stubFunction.restore();
+});
+
+test('Stub function resolves and throws.', t => {
+  let stubFunction = sinon.stub(main, 'user');
+  stubFunction.withArgs('romi').onCall(0).returns('fake-user-advance-romi');
+  stubFunction.callsFake((userName) => {
+    return `fake-user-${userName}`;
+  })
+  stubFunction.withArgs('one').resolvesArg(0);
+  stubFunction.withArgs('two').throwsArg(0);
+  t.is(main.user('subham'), 'fake-user-subham');
+  t.is(main.user('romi'), 'fake-user-advance-romi');
+  t.is(main.user('romi'), 'fake-user-romi');
+  main.user('one')
+    .then(res => {
+      t.is(res, 'one');
+    })
+
+  let error = t.throws(() => { main.user('two'); });  
+  t.is(error, 'two');
+  stubFunction.restore();
+});
+
+test('Defines a new value for this stub..', t => {
+  let stub = sinon.stub(main, 'sampleCons');
+  stub.value('newValue');
+  t.is(main.sampleCons, 'newValue');
+  stub.restore();
+  t.is(main.sampleCons, 'demoConst');
+});
