@@ -1,0 +1,43 @@
+{
+  "name": "ava-sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava --verbose"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "babel-cli": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "eslint": "^5.6.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-ava": "^5.1.1",
+    "eslint-plugin-import": "^2.14.0",
+    "sinon": "^7.1.0",
+    "watch": "^1.0.2"
+  },
+  "dependencies": {
+    "pubsub-js": "^1.7.0"
+  },
+  "ava": {
+    "files": [
+      "./test/**/*.js",
+      "./test/**/*.mjs"
+    ],
+    "require": [
+      "babel-preset-env",
+      "babel-polyfill",
+      "babel-register"
+    ],
+    "babel": "inherit",
+    "extensions": [
+      "mjs",
+      "js"
+    ]
+  }
+}
